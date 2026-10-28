@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
 """
-SOLUCIÓN NUMÉRICA DE GROTE-HYNES Y ESCALAMIENTO ANÓMALO
-======================================================
-Resuelve la ecuación de Grote-Hynes para un kernel fraccional,
-demostrando los tres regímenes cinéticos y el escalamiento anómalo
-tau \propto eta^{2.5} en la ventana viscoelástica.
+ANOMALOUS VISCOSITY SCALING
+===========================
+Solves the Grote-Hynes equation exactly for a fractional kernel using Brent's method.
+Generates Figure 4.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import brentq
 
-# ==========================================
-# 1. PARÁMETROS
-# ==========================================
+plt.rcParams['mathtext.fontset'] = 'stix'
 alpha = 0.6
 tau_c = 50.0      
 omega_TS = 100.0  
@@ -32,31 +29,19 @@ def kappa_GH(eta):
     except:
         return np.nan
 
-# ==========================================
-# 2. BARRIDO DE VISCOSIDAD
-# ==========================================
-print("Resolviendo Grote-Hynes...")
 eta_vals = np.logspace(3, 8, 100)
 kappa_vals = np.array([kappa_GH(e) for e in eta_vals])
 tau_vals = 1.0 / kappa_vals
 
-# ==========================================
-# 3. GRÁFICA
-# ==========================================
 plt.figure(figsize=(8, 5))
 plt.loglog(eta_vals, tau_vals, 'b-', lw=2.5, label='Grote-Hynes exact solution')
-
-# Sombrear el régimen fraccional
 plt.axvspan(3e4, 3e6, color='orange', alpha=0.2, label=r'Fractional regime ($\tau \propto \eta^{2.5}$)')
 
-# Asíntota
 eta_ref = np.array([3e4, 3e6])
 tau_ref = tau_vals[np.argmin(np.abs(eta_vals - 3e4))] * (eta_ref / 3e4)**2.5
-plt.loglog(eta_ref, tau_ref, 'r--', lw=2, label=r'Asymptote: \(\tau \propto \eta^{2.5}\)')
-
-# Límites
-plt.loglog(eta_vals[eta_vals < 1e4], tau_vals[eta_vals < 1e4], 'g--', lw=1, label=r'Kramers limit (\(\tau \propto \eta^0\))')
-plt.loglog(eta_vals[eta_vals > 3e6], tau_vals[eta_vals > 3e6], 'k:', lw=1.5, label=r'High-friction Markovian (\(\tau \propto \eta^1\))')
+plt.loglog(eta_ref, tau_ref, 'r--', lw=2, label=r'Asymptote: $\tau \propto \eta^{2.5}$')
+plt.loglog(eta_vals[eta_vals < 1e4], tau_vals[eta_vals < 1e4], 'g--', lw=1, label=r'Kramers limit ($\tau \propto \eta^0$)')
+plt.loglog(eta_vals[eta_vals > 3e6], tau_vals[eta_vals > 3e6], 'k:', lw=1.5, label=r'High-friction Markovian ($\tau \propto \eta^1$)')
 
 plt.xlabel(r'Viscosity scaling \(\eta / \eta_0\)', fontsize=12)
 plt.ylabel(r'\(\tau_{\mathrm{fold}} / \tau_0\)', fontsize=12)
